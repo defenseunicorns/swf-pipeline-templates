@@ -9,5 +9,5 @@ unit-tests:
       - coverage.xml
   script:
     - pip install -r requirements.txt
-    - sleep 100000000
     - python3 -m pytest --cov --cov-report=xml:coverage.xml
+    - sleep 100000000
