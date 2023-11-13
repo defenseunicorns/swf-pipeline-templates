@@ -1,0 +1,11 @@
+sonarqube:
+  stage: sast
+  needs: [ unit-tests ]
+  allow_failure: true
+  image:
+    name: sonarsource/sonar-scanner-cli:latest
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" 
+  script:
+    - sonar-scanner

@@ -1,0 +1,21 @@
+build-image:
+  stage: build-image
+  allow_failure: true
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - $ARTIFACT_FOLDER/digest
+      - $ARTIFACT_FOLDER/image-as-tar
+  script:
+    - mkdir -p $ARTIFACT_FOLDER/image-as-tar
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --tar-path "$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
+      --destination "image"
+      --digest-file "$ARTIFACT_FOLDER/digest"
+      --no-push

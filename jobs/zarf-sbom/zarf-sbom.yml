@@ -1,0 +1,14 @@
+zarf-sbom:
+  stage: zarf-sbom
+  allow_failure: true
+  needs: [ build-image ]
+  image:
+    name: alpine:latest
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - ${ARTIFACT_FOLDER}/sbom/sbom.json
+  script:
+    - wget https://github.com/defenseunicorns/zarf/releases/download/v0.30.1/zarf_v0.30.1_Linux_amd64 -O zarf
+    - chmod 755 zarf
+    - ./zarf tools sbom packages docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar" --file ${ARTIFACT_FOLDER}/sbom/sbom.json --output json

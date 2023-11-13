@@ -1,0 +1,14 @@
+skopeo:
+  stage: push-image
+  needs: [ clamav, grype, trivy, build-image ]
+  image: 
+    name: alpine:latest
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - apk add skopeo
+    - skopeo --version
+    - skopeo --debug copy
+      --dest-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
+      docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
+      docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}

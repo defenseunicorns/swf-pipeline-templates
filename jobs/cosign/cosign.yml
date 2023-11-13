@@ -1,0 +1,17 @@
+sign-image:
+  stage: sign-image
+  needs: [ skopeo, build-image ]
+  allow_failure: true
+  image:
+    name: alpine:latest
+  variables:
+    COSIGN_YES: "true" # Used by Cosign to skip confirmation prompts for non-destructive operations
+  id_tokens:
+    SIGSTORE_ID_TOKEN: # Used by Cosign to get certificate from Fulcio
+      aud: sigstore
+  script:
+    - DIGEST=$(cat $ARTIFACT_FOLDER/digest)
+    - apk add --update cosign
+    - cosign version
+    - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - cosign sign "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
