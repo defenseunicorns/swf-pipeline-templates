@@ -14,5 +14,5 @@ sign-image:
     - apk add --update cosign
     - cosign version
     - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - cosign generate-key-pair env://cosign-key
+    - cosign generate-key-pair --kms env://cosign-key
     - cosign sign --key env://cosign-key $IMAGE "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
