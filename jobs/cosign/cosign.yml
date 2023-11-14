@@ -15,4 +15,4 @@ sign-image:
     - cosign version
     - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - cosign generate-key-pair gitlab://swf-pipline
-    - cosign sign --key gitlab://jlo/swf-pipeline $IMAGE "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
+    - cosign sign --key gitlab://$CI_REGISTRY_USER/swf-pipeline $IMAGE "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
