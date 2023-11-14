@@ -13,5 +13,6 @@ sign-image:
     - DIGEST=$(cat $ARTIFACT_FOLDER/digest)
     - apk add --update cosign
     - cosign version
-    #- cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - cosign sign "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
+    - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - cosign generate-key-pair k8s://gitlab/cosign-secret
+    - cosign sign --key k8s://gitlab/cosign-secret $IMAGE "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
