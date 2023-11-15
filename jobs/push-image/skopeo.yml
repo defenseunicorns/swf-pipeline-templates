@@ -1,14 +1,6 @@
 skopeo:
   stage: push-image
-  # needs: [ clamav, grype, trivy, build-image ]
-  needs:
-    - job: clamav
-      optional: true
-    - job: grype
-      optional: true
-    - job: trivy
-      optional: true
-    - job: build-image
+  needs: [ clamav, grype, trivy, build-image ]
   image: 
     name: alpine:latest
   variables:
