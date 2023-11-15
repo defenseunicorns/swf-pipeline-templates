@@ -7,6 +7,7 @@ sign-image:
   variables:
     COSIGN_YES: "true" # Used by Cosign to skip confirmation prompts for non-destructive operations
     GITLAB_TOKEN: $CI_JOB_TOKEN
+    GITLAB_HOST: "$CI_SERVER_HOST:$CI_SERVER_PORT"
   id_tokens:
     SIGSTORE_ID_TOKEN: # Used by Cosign to get certificate from Fulcio
       aud: sigstore
