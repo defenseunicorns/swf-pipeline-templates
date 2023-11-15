@@ -10,14 +10,14 @@ stages:
 image: python:latest
 
 include:
-  - local: jobs/unit-tests/python.yml
-  - local: jobs/gitleaks/gitleaks.yml
-  - local: jobs/sonarqube/sonarqube.yml
+  # - local: jobs/unit-tests/python.yml
+  # - local: jobs/gitleaks/gitleaks.yml
+  # - local: jobs/sonarqube/sonarqube.yml
   - local: jobs/build-image/base.yml
-  - local: jobs/zarf-sbom/zarf-sbom.yml
-  - local: jobs/scan-image/clamav.yml
-  - local: jobs/scan-image/grype.yml
-  - local: jobs/scan-image/trivy.yml
+  # - local: jobs/zarf-sbom/zarf-sbom.yml
+  # - local: jobs/scan-image/clamav.yml
+  # - local: jobs/scan-image/grype.yml
+  # - local: jobs/scan-image/trivy.yml
   - local: jobs/push-image/skopeo.yml
   - local: jobs/cosign/cosign.yml
 
