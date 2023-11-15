@@ -1,6 +1,6 @@
 sign-image:
   stage: sign-image
-  needs: [ skopeo, build-image, push-image ]
+  needs: [ skopeo, build-image ]
   allow_failure: true
   image:
     name: alpine:latest
