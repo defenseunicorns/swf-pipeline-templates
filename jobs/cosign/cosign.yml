@@ -10,9 +10,10 @@ sign-image:
     SIGSTORE_ID_TOKEN: # Used by Cosign to get certificate from Fulcio
       aud: sigstore
   script:
-    - DIGEST=$(cat $ARTIFACT_FOLDER/digest)
+    #- DIGEST=$(cat $ARTIFACT_FOLDER/digest)
+    - docker inspect --format='{{index .RepoDigests 0}}' 
     - apk add --update cosign
     - cosign version
     - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - cat $COSIGN_KEY > cosign.key
-    - cosign sign --key cosign.key --tlog-upload=false "${CI_REGISTRY_IMAGE}@${DIGEST}"
+    - cosign sign --key cosign.key --tlog-upload=false "${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}"
