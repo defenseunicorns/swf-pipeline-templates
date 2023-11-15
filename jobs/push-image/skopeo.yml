@@ -25,5 +25,5 @@ skopeo:
       --dest-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
       docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
       docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
-    - skopeo inspect --format='{{.Digest}}' docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} > $ARTIFACT_FOLDER/registry_digest
+    - skopeo inspect --dest-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} --format='{{.Digest}}' docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} > $ARTIFACT_FOLDER/registry_digest
   
