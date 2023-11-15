@@ -16,7 +16,7 @@ skopeo:
   script:
     - apk add skopeo
     - skopeo --version
-    - skopeo --debug copy
+    - skopeo --debug copy --preserve-digests
       --dest-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
       docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
       docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
