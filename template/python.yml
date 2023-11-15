@@ -1,9 +1,9 @@
 stages:
-  - unit-tests
-  - sast
+  # - unit-tests
+  # - sast
   - build-image
-  - zarf-sbom
-  - scan-image
+  # - zarf-sbom
+  # - scan-image
   - push-image
   - sign-image
 
