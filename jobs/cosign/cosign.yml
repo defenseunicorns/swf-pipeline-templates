@@ -15,4 +15,4 @@ sign-image:
     - cosign version
     - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - cat $COSIGN_KEY > cosign.key
-    - cosign sign --key cosign.key tlog-upload=false "${CI_REGISTRY_IMAGE}@${DIGEST}"
+    - cosign sign --key cosign.key --tlog-upload=false "${CI_REGISTRY_IMAGE}@${DIGEST}"
