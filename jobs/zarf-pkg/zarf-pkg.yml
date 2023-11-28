@@ -1,0 +1,13 @@
+zarf-pkg:
+  stage: zarf-pkg
+  allow_failure: true
+  image:
+    name: lucasrod96/zarf:v0.0.1
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - zarf-package-*.zst
+  script:
+    - zarf version
+    - zarf package create .
+    - zarf package deploy zarf-package-*.zst
