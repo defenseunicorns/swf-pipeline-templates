@@ -9,5 +9,5 @@ zarf-pkg:
       - zarf-package-*.zst
   script:
     - zarf version
-    - zarf package create .
-    - zarf package deploy zarf-package-*.zst
+    - zarf package create . --confirm
+    
