@@ -3,6 +3,8 @@ zarf-pkg:
   allow_failure: true
   image:
     name: lucasrod96/zarf:v0.0.1
+  variables:
+    - DESTINATION_REGISTRY: "oci://${CI_REGISTRY_IMAGE}"
   artifacts:
     expire_in: 1 day
     paths:
@@ -11,4 +13,5 @@ zarf-pkg:
     - zarf version
     - echo ${CI_REGISTRY_PASSWORD} | zarf tools registry login ${CI_REGISTRY} --username ${CI_REGISTRY_USER} --password-stdin
     - zarf package create . --confirm
+    - zarf package publish zarf-package-*.tar.zst ${DESTINATION_REGISTRY}
     
