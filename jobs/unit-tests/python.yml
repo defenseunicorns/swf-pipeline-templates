@@ -10,4 +10,3 @@ unit-tests:
   script:
     - pip install -r requirements.txt
     - python3 -m pytest --cov --cov-report=xml:coverage.xml
-    - echo $COSIGN_KEY
