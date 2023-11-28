@@ -6,7 +6,7 @@ stages:
   - scan-image
   - push-image
   - sign-image
-  - deploy
+  - deploy-staging
 
 image: python:latest
 
