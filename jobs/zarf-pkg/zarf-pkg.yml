@@ -4,7 +4,7 @@ zarf-pkg:
   image:
     name: lucasrod96/zarf:v0.0.1
   variables:
-    - DESTINATION_REGISTRY: "oci://${CI_REGISTRY_IMAGE}"
+    DESTINATION_REGISTRY: "oci://${CI_REGISTRY_IMAGE}"
   artifacts:
     expire_in: 1 day
     paths:
