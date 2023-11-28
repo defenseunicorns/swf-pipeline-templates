@@ -1,5 +1,5 @@
-deploy_to_staging:
-  stage: deploy
+deploy-staging:
+  stage: deploy-staging
   needs: [ build-image, skopeo ]
   script:
     - kubectl apply -k manifests/
