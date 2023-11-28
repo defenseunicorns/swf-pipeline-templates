@@ -2,7 +2,7 @@ deploy-staging:
   stage: deploy-staging
   needs: [ build-image, skopeo ]
   script:
-    - kubectl apply -k manifests/
+    # - kubectl apply -k manifests/
   environment:
     name: staging
   # dependencies:
