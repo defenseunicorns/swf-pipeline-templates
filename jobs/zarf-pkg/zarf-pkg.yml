@@ -9,5 +9,6 @@ zarf-pkg:
       - zarf-package-*.zst
   script:
     - zarf version
+    - echo ${CI_REGISTRY_PASSWORD} | zarf tools registry login ${CI_REGISTRY} --username ${CI_REGISTRY_USER} --password-stdin
     - zarf package create . --confirm
     
