@@ -1,0 +1,19 @@
+kind: ZarfPackageConfig
+metadata:
+  name: swf-pipeline-pkg
+  description: "images for pipeline jobs"
+
+components:
+  - name: pipeline-images
+    required: true
+    images:
+      - gcr.io/kaniko-project/executor:v1.14.0-debug
+      - cgr.dev/chainguard/cosign:latest
+      - zricethezav/gitleaks:latest
+      - quay.io/skopeo/stable:v1.13.3
+      - clamav/clamav:latest
+      - cgr.dev/chainguard/grype:latest
+      - bitnami/trivy:latest
+      - sonarsource/sonar-scanner-cli:latest
+      - python:latest
+      - lucasrod96/zarf:v0.0.1
