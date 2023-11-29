@@ -4,11 +4,11 @@ include:
 grype:
   extends: .scan-image
   image: 
-    name: anchore/grype:v0.73.3
+    name: alpine:latest
   script:
-#    - wget https://github.com/anchore/grype/releases/download/v0.72.0/grype_0.72.0_linux_amd64.tar.gz -O grype.tar.gz
-#    - tar zxvf grype.tar.gz
-    - grype version
+    - wget https://github.com/anchore/grype/releases/download/v0.72.0/grype_0.72.0_linux_amd64.tar.gz -O grype.tar.gz
+    - tar zxvf grype.tar.gz
+    - ./grype version
     - cat ${ARTIFACT_FOLDER}/sbom/sbom.json
-    - grype sbom:${ARTIFACT_FOLDER}/sbom/sbom.json -o json --file ${CONTAINER_SCAN_REPORT}
+    - ./grype sbom:${ARTIFACT_FOLDER}/sbom/sbom.json -o json --file ${CONTAINER_SCAN_REPORT}
     - cat ${CONTAINER_SCAN_REPORT}
