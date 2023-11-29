@@ -9,4 +9,4 @@ zarf-sbom:
     paths:
       - ${ARTIFACT_FOLDER}/sbom/sbom.json
   script:
-    - ./zarf tools sbom packages docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar" --file ${ARTIFACT_FOLDER}/sbom/sbom.json --output json
+    - zarf tools sbom packages docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar" --file ${ARTIFACT_FOLDER}/sbom/sbom.json --output json
