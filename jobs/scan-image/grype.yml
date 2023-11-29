@@ -4,9 +4,9 @@ include:
 grype:
   extends: .scan-image
   image: 
-    name: anchore/grype:v0.73.3-debug
+    name: cgr.dev/chainguard/grype:latest
   script:
-    - /grype version
+    - grype version
     - cat ${ARTIFACT_FOLDER}/sbom/sbom.json
-    - /grype sbom:${ARTIFACT_FOLDER}/sbom/sbom.json -o json --file ${CONTAINER_SCAN_REPORT}
+    - grype sbom:${ARTIFACT_FOLDER}/sbom/sbom.json -o json --file ${CONTAINER_SCAN_REPORT}
     - cat ${CONTAINER_SCAN_REPORT}
