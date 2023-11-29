@@ -2,7 +2,7 @@ skopeo:
   stage: push-image
   needs: [ clamav, grype, trivy, build-image ]
   image: 
-    name: alpine:latest
+    name: quay.io/skopeo/stable:v1.13.3
   variables:
     GIT_STRATEGY: none
   artifacts:
@@ -11,11 +11,9 @@ skopeo:
     paths:
       - $ARTIFACT_FOLDER/registry_digest
   script:
-    - apk add skopeo
     - skopeo --version
     - skopeo --debug copy
       --dest-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD}
       docker-archive:"$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
       docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA}
     - skopeo inspect --creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} --format='{{.Digest}}' docker://${CI_REGISTRY_IMAGE}:${CI_COMMIT_SHORT_SHA} > $ARTIFACT_FOLDER/registry_digest
-
