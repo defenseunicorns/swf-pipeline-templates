@@ -16,4 +16,4 @@ components:
       - bitnami/trivy:latest
       - sonarsource/sonar-scanner-cli:latest
       - python:latest
-      - lucasrod96/zarf:v0.0.1
+      - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
