@@ -9,7 +9,7 @@ stages:
   - zarf-pkg
   # - deploy-staging
 
-image: python:latest
+image: python:3.12
 
 include:
   - local: jobs/unit-tests/python.yml

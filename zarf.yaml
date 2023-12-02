@@ -15,5 +15,5 @@ components:
       - cgr.dev/chainguard/grype:latest
       - bitnami/trivy:latest
       - sonarsource/sonar-scanner-cli:latest
-      - python:latest
+      - python:3.12
       - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
