@@ -7,7 +7,6 @@ stages:
   - push-image
   - sign-image
   - zarf-pkg
-  # - deploy-staging
 
 image: python:latest
 
@@ -23,7 +22,6 @@ include:
   - local: jobs/push-image/skopeo.yml
   - local: jobs/cosign/cosign.yml
   - local: jobs/zarf-pkg/zarf-pkg.yml
-  # - local: jobs/deploy/deploy.yml
 
 
 variables:
