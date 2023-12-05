@@ -9,7 +9,7 @@ variables:
 
 verify-packages:
   stage: Verify & Scan
-  image: python:latest
+  image: python:3.12
   allow_failure: true
   artifacts:
     when: always
@@ -37,7 +37,7 @@ scan-packages:
 
 upload-packages:
   stage: Publish
-  image: python:latest
+  image: python:3.12
   when: manual
   needs:
     - verify-packages

@@ -18,4 +18,7 @@ build-image:
       --tar-path "$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
       --destination "image"
       --digest-file "$ARTIFACT_FOLDER/digest"
+      --build-arg "${PIP_BUILD_ARG}"
       --no-push
+  variables:
+    PIP_BUILD_ARG: pip_extra_args=--index-url=${PYPI_INDEX_URL}

@@ -29,3 +29,6 @@ include:
 variables:
   # top level folder to hold pipeline artifacts
   ARTIFACT_FOLDER: ".ci_artifacts"
+  # The project that has the python dependencies published to the package registry
+  PYPI_INDEX_URL: "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.bigbang.dev/api/v4/projects/1/packages/pypi/simple"
+
