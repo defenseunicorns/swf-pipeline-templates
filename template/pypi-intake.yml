@@ -1,5 +1,47 @@
-upload-packages:
-  image: python:3.12
+stages:
+  - Verify & Scan
+  - Publish
+
+variables:
+  ARTIFACT_FOLDER: ".ci_artifacts"
+  PYPI_INDEX_URL: "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.bigbang.dev/api/v4/projects/1/packages/pypi/simple"
+
+
+verify-packages:
+  stage: Verify & Scan
+  image: python:latest
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - "${ARTIFACT_FOLDER}/"
+  before_script:
+    - mkdir -p $ARTIFACT_FOLDER
   script:
-    - pip install --index-url https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.bigbang.dev/api/v4/projects/1/packages/pypi/simple twine
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi --skip-existing packages/*
+    - pip install --index-url "${PYPI_INDEX_URL}" check-wheel-contents
+    - python -m check_wheel_contents --ignore "${EXTRA_CHECKS}" ./packages | tee ${ARTIFACT_FOLDER}/wheel-contents.txt
+
+scan-packages:
+  stage: Verify & Scan
+  image: clamav/clamav:latest
+  before_script:
+    - mkdir -p $ARTIFACT_FOLDER
+  script:
+    - freshclam || true
+    - clamscan -irv --scan-archive=yes --stdout "${CI_PROJECT_DIR}/packages" | tee ${ARTIFACT_FOLDER}/clamav-report.txt
+    - cat ${ARTIFACT_FOLDER}/clamav-report.txt
+  artifacts:
+    when: always
+    paths:
+      - "${ARTIFACT_FOLDER}/"
+
+upload-packages:
+  stage: Publish
+  image: python:latest
+  when: manual
+  needs:
+    - verify-packages
+    - scan-packages
+  script:
+    - pip install --index-url "${PYPI_INDEX_URL}" twine
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi --skip-existing packages/*.whl
