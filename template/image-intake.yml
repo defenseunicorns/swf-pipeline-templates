@@ -1,0 +1,58 @@
+stages:
+  - sboms
+  - scan-images
+  # - push-image
+  # - sign-image
+
+image: python:3.12
+
+generate-sboms:
+  stage: sboms
+  allow_failure: true
+  image:
+    name: ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - ${ARTIFACT_FOLDER}/sboms
+  before_script:
+    - mkdir -p ${ARTIFACT_FOLDER}/sboms
+  script:
+    - |
+      for image in ./images/*
+      do
+        zarf tools sbom $image --file "${ARTIFACT_FOLDER}/sboms/$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).json" --output json
+      done
+clamav:
+  stage: scan-images
+  needs: [ generate-sboms ]
+  artifacts:
+    when: always
+    paths:
+      - "${ARTIFACT_FOLDER}/scan-images/"
+  before_script:
+    - mkdir -p ${ARTIFACT_FOLDER}/scan-images/
+  image: 
+    name: clamav/clamav:latest
+  script:
+      # Run freshclam if we can but if it's not successful that's okay
+    - freshclam || true
+    - |
+      for image in ./images/*
+      do
+        clamscan -irv --scan-archive=yes --stdout $image | tee ${ARTIFACT_FOLDER}/scan-images/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
+        cat ${ARTIFACT_FOLDER}/scan-images/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
+      done
+
+
+# include:
+#   - local: jobs/scan-image/clamav.yml
+#   - local: jobs/scan-image/grype.yml
+#   - local: jobs/scan-image/trivy.yml
+#   - local: jobs/push-image/skopeo.yml
+#   - local: jobs/cosign/cosign.yml
+
+
+variables:
+  # top level folder to hold pipeline artifacts
+  ARTIFACT_FOLDER: ".ci_artifacts"

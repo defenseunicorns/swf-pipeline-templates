@@ -17,3 +17,4 @@ components:
       - sonarsource/sonar-scanner-cli:latest
       - python:3.12
       - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
+      - bitnami/git:2.43.0
