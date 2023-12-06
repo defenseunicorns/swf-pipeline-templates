@@ -48,7 +48,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/defenseunicorns/swf-pipeline-templates/grype:v0.73.4-with-db
+          tags: ghcr.io/defenseunicorns/swf-pipeline-templates/grype:latest-with-db
           context: dockerfiles
           file: dockerfiles/grype.Dockerfile
           platforms: linux/amd64
