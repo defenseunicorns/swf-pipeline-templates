@@ -1,3 +1,3 @@
-FROM ghcr.io/anchore/grype:v0.73.4
+FROM cgr.dev/chainguard/grype:latest
 
-RUN ["/grype", "db", "update"]
+RUN grype db update
