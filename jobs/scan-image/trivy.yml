@@ -4,7 +4,7 @@ include:
 trivy:
   extends: .scan-image
   image: 
-    name: bitnami/trivy:latest
+    name: ghcr.io/defenseunicorns/swf-pipeline-templates/trivy:0.48.0-with-db
     entrypoint: [""]
   variables:
     GIT_STRATEGY: none
@@ -13,4 +13,4 @@ trivy:
     TRIVY_AUTH_URL: "$CI_REGISTRY"
   script:
     - trivy --version
-    - trivy image --format json --output $CONTAINER_SCAN_REPORT  --input "$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"
+    - trivy image --skip-update --format json --output $CONTAINER_SCAN_REPORT  --input "$ARTIFACT_FOLDER/image-as-tar/${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}.tar"

@@ -12,8 +12,8 @@ components:
       - zricethezav/gitleaks:latest
       - quay.io/skopeo/stable:v1.13.3
       - clamav/clamav:latest
-      - cgr.dev/chainguard/grype:latest
-      - bitnami/trivy:latest
+      - ghcr.io/defenseunicorns/swf-pipeline-templates/grype:v0.73.4-with-db
+      - ghcr.io/defenseunicorns/swf-pipeline-templates/trivy:0.48.0-with-db
       - sonarsource/sonar-scanner-cli:latest
       - python:3.12
       - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3

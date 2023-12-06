@@ -4,7 +4,9 @@ include:
 grype:
   extends: .scan-image
   image: 
-    name: cgr.dev/chainguard/grype:latest
+    name: ghcr.io/defenseunicorns/swf-pipeline-templates/grype:v0.73.4-with-db
+  variables:
+    GRYPE_DB_AUTO_UPDATE: false
   script:
     - grype version
     - cat ${ARTIFACT_FOLDER}/sbom/sbom.json
