@@ -1,14 +1,13 @@
 stages:
   - sboms
   - scan-images
-  # - push-image
-  # - sign-image
+  - push-images
+  - sign-images
 
 image: python:3.12
 
 generate-sboms:
   stage: sboms
-  allow_failure: true
   image:
     name: ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
   artifacts:
@@ -23,15 +22,16 @@ generate-sboms:
       do
         zarf tools sbom $image --file "${ARTIFACT_FOLDER}/sboms/$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).json" --output json
       done
+
 clamav:
   stage: scan-images
   needs: [ generate-sboms ]
   artifacts:
     when: always
     paths:
-      - "${ARTIFACT_FOLDER}/scan-images/"
+      - "${ARTIFACT_FOLDER}/clamav/"
   before_script:
-    - mkdir -p ${ARTIFACT_FOLDER}/scan-images/
+    - mkdir -p ${ARTIFACT_FOLDER}/clamav/
   image: 
     name: clamav/clamav:latest
   script:
@@ -40,18 +40,106 @@ clamav:
     - |
       for image in ./images/*
       do
-        clamscan -irv --scan-archive=yes --stdout $image | tee ${ARTIFACT_FOLDER}/scan-images/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
-        cat ${ARTIFACT_FOLDER}/scan-images/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
+        clamscan -irv --scan-archive=yes --stdout $image | tee ${ARTIFACT_FOLDER}/clamav/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
+        cat ${ARTIFACT_FOLDER}/clamav/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
       done
 
+trivy:
+  stage: scan-images
+  needs: [ generate-sboms ]
+  artifacts:
+    when: always
+    paths:
+      - "${ARTIFACT_FOLDER}/trivy/"
+  image: 
+    name: ghcr.io/defenseunicorns/swf-pipeline-templates/trivy:0.48.0-with-db
+  variables:
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+    TRIVY_AUTH_URL: "$CI_REGISTRY"
+  before_script:
+    - mkdir -p ${ARTIFACT_FOLDER}/trivy/
+  script:
+    - trivy --version
+    - |
+      for image in ./images/*
+      do
+        trivy image --skip-update --format json --output ${ARTIFACT_FOLDER}/trivy/trivy-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).json  --input $image
+      done
 
-# include:
-#   - local: jobs/scan-image/clamav.yml
-#   - local: jobs/scan-image/grype.yml
-#   - local: jobs/scan-image/trivy.yml
-#   - local: jobs/push-image/skopeo.yml
-#   - local: jobs/cosign/cosign.yml
+grype:
+  stage: scan-images
+  needs: [ generate-sboms ]
+  artifacts:
+    when: always
+    paths:
+      - ${ARTIFACT_FOLDER}/grype/
+  image: 
+    name: ghcr.io/defenseunicorns/swf-pipeline-templates/grype:latest-with-db
+  variables:
+    GRYPE_DB_AUTO_UPDATE: "false"
+  before_script:
+    - mkdir -p ${ARTIFACT_FOLDER}/grype/
+  script:
+    - grype version
+    - |
+      for image in ./images/*
+      do
+        grype sbom:${ARTIFACT_FOLDER}/sboms/$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).json -o json --file ${ARTIFACT_FOLDER}/grype/grype-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).json
+      done
 
+skopeo:
+  stage: push-images
+  needs: [ clamav, grype, trivy ]
+  image: 
+    name: quay.io/skopeo/stable:v1.13.3
+  artifacts:
+    when: always
+    expire_in: 1 day
+    paths:
+      - $ARTIFACT_FOLDER/digests/
+  before_script:
+    - mkdir -p $ARTIFACT_FOLDER/digests/
+  script:
+    - skopeo --version
+    - |
+      for image in ./images/*
+      do
+        IMAGE_FILE_NAME=$(echo $image | cut -d '/' -f3 | cut -d '.' -f1)
+        echo "$IMAGE_FILE_NAME"
+        TAG=$(echo $IMAGE_FILE_NAME | sed 's/--/\n/g' | tail -n 1)
+        echo "$TAG"
+        IMAGE_NAME=$(echo $IMAGE_FILE_NAME | sed 's/--/\n/g' | head -n 1)
+        echo "$IMAGE_NAME"
+        skopeo --debug copy --dest-creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} docker-archive:"$image" docker://${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG}
+        skopeo inspect --creds ${CI_REGISTRY_USER}:${CI_REGISTRY_PASSWORD} --format='{{.Digest}}' docker://${CI_REGISTRY_IMAGE}/${IMAGE_NAME}:${TAG} | tee $ARTIFACT_FOLDER/digests/$(echo $image | cut -d '/' -f3 | cut -d '.' -f1)_registry_digest
+      done
+
+sign-images:
+  stage: sign-images
+  needs: [ skopeo ]
+  image:
+    name: cgr.dev/chainguard/cosign:latest
+  variables:
+    COSIGN_YES: "true" # Used by Cosign to skip confirmation prompts for non-destructive operations
+  id_tokens:
+    SIGSTORE_ID_TOKEN: # Used by Cosign to get certificate from Fulcio
+      aud: sigstore
+  script:
+    - cosign version
+    - cosign login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - |
+      for image in ./images/*
+      do
+        IMAGE_FILE_NAME=$(echo $image | cut -d '/' -f3 | cut -d '.' -f1)
+        echo "$IMAGE_FILE_NAME"
+        TAG=$(echo $IMAGE_FILE_NAME | sed 's/--/\n/g' | tail -n 1)
+        echo "$TAG"
+        IMAGE_NAME=$(echo $IMAGE_FILE_NAME | sed 's/--/\n/g' | head -n 1)
+        echo "$IMAGE_NAME"
+        DIGEST=$(cat $ARTIFACT_FOLDER/digests/${IMAGE_FILE_NAME}_registry_digest)
+        cosign sign --key ${COSIGN_KEY} --tlog-upload=false "${CI_REGISTRY_IMAGE}/${IMAGE_NAME}@${DIGEST}"
+      done
 
 variables:
   # top level folder to hold pipeline artifacts
