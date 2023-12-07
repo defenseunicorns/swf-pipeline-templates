@@ -27,7 +27,7 @@ TWINE_PASSWORD=<gitlab personal access token> \
   TWINE_USERNAME=<gitlab username> \
   python3 -m twine upload \
   --skip-existing \
-  --repository-url https://<gitlab url>/api/v4/projects/<project id>/packages/pypi *
+  --repository-url https://<gitlab url>/api/v4/projects/<project id>/packages/pypi *.whl
 ```
 
 Your pipeline is now setup.
