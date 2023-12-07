@@ -41,7 +41,6 @@ clamav:
       for image in ./images/*
       do
         clamscan -irv --scan-archive=yes --stdout $image | tee ${ARTIFACT_FOLDER}/clamav/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
-        cat ${ARTIFACT_FOLDER}/clamav/clamav-report-$(echo $image | cut -d '/' -f3 | cut -d '.' -f1).txt
       done
 
 trivy:
