@@ -13,9 +13,13 @@ image: python:3.12
 
 include:
   - local: jobs/unit-tests/python.yml
+    variables:
+     PIP_EXTRA_ARGS: ${PIP_INDEX_URL_ARG}
   - local: jobs/gitleaks/gitleaks.yml
   - local: jobs/sonarqube/sonarqube.yml
   - local: jobs/build-image/base.yml
+    variables:
+      KANIKO_EXTRA_ARG: --build-arg pip_extra_args=${PIP_INDEX_URL_ARG}
   - local: jobs/zarf-sbom/zarf-sbom.yml
   - local: jobs/scan-image/clamav.yml
   - local: jobs/scan-image/grype.yml
@@ -23,7 +27,6 @@ include:
   - local: jobs/push-image/skopeo.yml
   - local: jobs/cosign/cosign.yml
   - local: jobs/zarf-pkg/zarf-pkg.yml
-  # - local: jobs/deploy/deploy.yml
 
 
 variables:
@@ -31,4 +34,5 @@ variables:
   ARTIFACT_FOLDER: ".ci_artifacts"
   # The project that has the python dependencies published to the package registry
   PYPI_INDEX_URL: "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.bigbang.dev/api/v4/projects/1/packages/pypi/simple"
+  PIP_INDEX_URL_ARG: --index-url "${PYPI_INDEX_URL}"
 

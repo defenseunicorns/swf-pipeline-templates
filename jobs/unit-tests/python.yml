@@ -8,5 +8,7 @@ unit-tests:
     paths:
       - coverage.xml
   script:
-    - pip install --index-url "${PYPI_INDEX_URL}" -r requirements.txt
+    - pip install ${PIP_EXTRA_ARGS} -r requirements.txt
     - python3 -m pytest --cov --cov-report=xml:coverage.xml
+  variables:
+    PIP_EXTRA_ARGS: ""
