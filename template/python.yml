@@ -13,13 +13,9 @@ image: python:3.12
 
 include:
   - local: jobs/unit-tests/python.yml
-    variables:
-     PIP_EXTRA_ARGS: ${PIP_INDEX_URL_ARG}
   - local: jobs/gitleaks/gitleaks.yml
   - local: jobs/sonarqube/sonarqube.yml
   - local: jobs/build-image/base.yml
-    variables:
-      KANIKO_EXTRA_ARG: --build-arg pip_extra_args=${PIP_INDEX_URL_ARG}
   - local: jobs/zarf-sbom/zarf-sbom.yml
   - local: jobs/scan-image/clamav.yml
   - local: jobs/scan-image/grype.yml
@@ -28,6 +24,13 @@ include:
   - local: jobs/cosign/cosign.yml
   - local: jobs/zarf-pkg/zarf-pkg.yml
 
+unit-tests:
+  variables:
+    PIP_EXTRA_ARGS: ${PIP_INDEX_URL_ARG}
+
+build-image:
+  variables:
+    KANIKO_EXTRA_ARG: --build-arg pip_extra_args=${PIP_INDEX_URL_ARG}
 
 variables:
   # top level folder to hold pipeline artifacts

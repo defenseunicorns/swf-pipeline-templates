@@ -32,7 +32,7 @@ clamav:
       - "${ARTIFACT_FOLDER}/clamav/"
   before_script:
     - mkdir -p ${ARTIFACT_FOLDER}/clamav/
-  image: 
+  image:
     name: clamav/clamav:latest
   script:
       # Run freshclam if we can but if it's not successful that's okay
