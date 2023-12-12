@@ -1,9 +1,69 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/defenseunicorns/zarf/main/zarf.schema.json
 kind: ZarfPackageConfig
 metadata:
-  name: swf-pipeline-pkg
-  description: "images for pipeline jobs"
+  name: swf-bootstrap
+  version: "1.0.0"
+  architecture: amd64
+
+variables:
+  - name: GITLAB_PAT
+    prompt: true
+    sensitive: true
+    description: GitLab personal access token with api access
 
 components:
+  - name: gitlab-cli
+    required: true
+    files:
+      - source: https://gitlab.com/gitlab-org/cli/-/releases/v1.35.0/downloads/glab_1.35.0_Linux_x86_64.tar.gz
+        extractPath: bin/glab
+        target: glab
+        executable: true
+  - name: git-sync
+    required: true
+    actions:
+      onDeploy:
+        before:
+          - cmd: echo root
+            setVariables:
+              - name: GITLAB_USER
+          - cmd: ./zarf tools kubectl get secret --namespace gitlab gitlab-gitlab-initial-root-password --output jsonpath='{.data.password}' | base64 --decode
+            setVariables:
+              - name: GITLAB_PASSWORD
+          - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab --output jsonpath='{.spec.hosts[0]}'
+            setVariables:
+              - name: GITLAB_URL
+        after:
+          - cmd: |
+              ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
+                --components pipeline-templates \
+                --git-url "https://${ZARF_VAR_GITLAB_URL}" \
+                --git-push-username "${ZARF_VAR_GITLAB_USER}" \
+                --git-push-password "${ZARF_VAR_GITLAB_PASSWORD}" \
+                --no-progress \
+                --confirm
+  - name: gitlab-repo-reorg
+    required: true
+    files:
+      - source: zarf-files/gitlab-reorg.sh
+        target: gitlab-reorg.sh
+        executable: true
+    actions:
+      onDeploy:
+        after:
+          - cmd: ./gitlab-reorg.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL}
+  - name: pipeline-templates
+    required: false
+    repos:
+      - https://gitlab.com/defense-unicorns/swf-pipeline-hello-world-python
+      - https://gitlab.com/defense-unicorns/gitlab-components/zarf-sbom-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/zarf-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/unit-tests-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/sonarqube-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/scan-image-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/push-image-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/gitleaks-component
+      - https://gitlab.com/defense-unicorns/gitlab-components/cosign-component
   - name: pipeline-images
     required: true
     images:
