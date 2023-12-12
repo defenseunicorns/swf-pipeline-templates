@@ -37,7 +37,7 @@ scan-packages:
 
 upload-packages:
   stage: Publish
-  image: python:3.12
+  image: python:3.12.1
   when: manual
   needs:
     - verify-packages

@@ -36,22 +36,45 @@ components:
         after:
           - cmd: |
               ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
-                --components pipeline-templates \
-                --git-url "https://${ZARF_VAR_GITLAB_URL}" \
-                --git-push-username "${ZARF_VAR_GITLAB_USER}" \
-                --git-push-password "${ZARF_VAR_GITLAB_PASSWORD}" \
-                --no-progress \
+                --components pipeline-templates,developer-images                   \
+                --git-url "https://${ZARF_VAR_GITLAB_URL}"                         \
+                --git-push-username "${ZARF_VAR_GITLAB_USER}"                      \
+                --git-push-password "${ZARF_VAR_GITLAB_PASSWORD}"                  \
+                --registry-url "${ZARF_VAR_REGISTRY_URL}"                          \
+                --registry-push-username "${ZARF_VAR_GITLAB_USER}"                 \
+                --registry-push-password "${ZARF_VAR_GITLAB_PASSWORD}"             \
+                --no-progress                                                      \
                 --confirm
+            maxRetries: 3
   - name: gitlab-repo-reorg
     required: true
     files:
       - source: zarf-files/gitlab-reorg.sh
         target: gitlab-reorg.sh
         executable: true
+      - source: https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux-amd64
+        target: jq
+        executable: true
     actions:
       onDeploy:
         after:
           - cmd: ./gitlab-reorg.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL}
+  - name: pypi-packages
+    required: true
+    actions:
+      onCreate:
+        before:
+          - cmd: ./zarf-files/pypi-download.sh 3.12.1
+          - cmd: "./zarf-files/pypi-download.sh ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
+      onDeploy:
+        after:
+          - cmd: "./pypi-upload.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL} ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
+    files:
+      - source: pypi/
+        target: pypi/
+      - source: zarf-files/pypi-upload.sh
+        target: pypi-upload.sh
+        executable: true
   - name: pipeline-templates
     required: false
     repos:
@@ -64,6 +87,8 @@ components:
       - https://gitlab.com/defense-unicorns/gitlab-components/push-image-component
       - https://gitlab.com/defense-unicorns/gitlab-components/gitleaks-component
       - https://gitlab.com/defense-unicorns/gitlab-components/cosign-component
+      - https://gitlab.com/defense-unicorns/pypi-intake
+      - https://gitlab.com/defense-unicorns/image-intake
   - name: pipeline-images
     required: true
     images:
@@ -75,6 +100,15 @@ components:
       - ghcr.io/defenseunicorns/swf-pipeline-templates/grype:latest-with-db
       - ghcr.io/defenseunicorns/swf-pipeline-templates/trivy:0.48.0-with-db
       - sonarsource/sonar-scanner-cli:latest
-      - python:3.12
+      - python:3.12.1
       - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
       - bitnami/git:2.43.0
+      - hadolint/hadolint:latest-alpine
+  - name: developer-images
+    required: false
+    images:
+      - python:3-alpine
+      - node:18.16.0-alpine3.17
+      - golang:1.21-bookworm
+      # Too many directories deep for gl container registry
+      # - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
