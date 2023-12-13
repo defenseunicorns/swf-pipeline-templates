@@ -41,5 +41,6 @@ $PIP_COMMAND install pypi/${VERSION_EXTRA}/*.whl
 TWINE_PASSWORD=$GLPAT \
   TWINE_USERNAME=$GLUSR \
   $PYTHON_COMMAND -m twine upload \
+  --disable-progress-bar \
   --skip-existing \
   --repository-url https://${GLURL}/api/v4/projects/${PYPI_PROJ_ID}/packages/pypi pypi/${VERSION}/*.whl
