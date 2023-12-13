@@ -33,19 +33,13 @@ components:
           - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab --output jsonpath='{.spec.hosts[0]}'
             setVariables:
               - name: GITLAB_URL
-          - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab-registry --output jsonpath='{.spec.hosts[0]}'
-            setVariables:
-              - name: REGISTRY_URL
         after:
           - cmd: |
               ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
-                --components pipeline-templates,developer-images                   \
+                --components pipeline-templates                                    \
                 --git-url "https://${ZARF_VAR_GITLAB_URL}"                         \
                 --git-push-username "${ZARF_VAR_GITLAB_USER}"                      \
                 --git-push-password "${ZARF_VAR_GITLAB_PASSWORD}"                  \
-                --registry-url "${ZARF_VAR_REGISTRY_URL}"                          \
-                --registry-push-username "${ZARF_VAR_GITLAB_USER}"                 \
-                --registry-push-password "${ZARF_VAR_GITLAB_PASSWORD}"             \
                 --no-progress                                                      \
                 --confirm
             maxRetries: 3
@@ -78,6 +72,33 @@ components:
       - source: zarf-files/pypi-upload.sh
         target: pypi-upload.sh
         executable: true
+  - name: image-intake
+    required: true
+    actions:
+      onDeploy:
+        before:
+          - cmd: echo root
+            setVariables:
+              - name: GITLAB_USER
+          - cmd: ./zarf tools kubectl get secret --namespace gitlab gitlab-gitlab-initial-root-password --output jsonpath='{.data.password}' | base64 --decode
+            setVariables:
+              - name: GITLAB_PASSWORD
+          - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab-registry --output jsonpath='{.spec.hosts[0]}'
+            setVariables:
+              - name: REGISTRY_URL
+          - cmd: echo ${ZARF_VAR_REGISTRY_URL}/root/image-intake
+            setVariables:
+              - name: REGISTRY_URL
+        after:
+          - cmd: |
+              ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
+                --components developer-images                                      \
+                --registry-url "${ZARF_VAR_REGISTRY_URL}"                          \
+                --registry-push-username "${ZARF_VAR_GITLAB_USER}"                 \
+                --registry-push-password "${ZARF_VAR_GITLAB_PASSWORD}"             \
+                --no-progress                                                      \
+                --confirm
+            maxRetries: 3
   - name: pipeline-templates
     required: false
     repos:
