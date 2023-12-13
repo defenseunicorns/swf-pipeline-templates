@@ -4,7 +4,9 @@ GLPAT="$1"
 
 GLURL="$2"
 
-VERSION="${3:-3.12.1}"
+VERSION="${3}"
+
+VERSION_EXTRA="${4}"
 
 PYPI_PROJ_ID=$(./glab api projects |
             ./jq '.[] | [.id, .name, .path, .visibility] | @sh' |
@@ -15,8 +17,6 @@ PYPI_PROJ_ID=$(./glab api projects |
             cut -d ',' -f1)
 
 GLUSR="root"
-
-mkdir -p pypi/$VERSION
 
 if command -v pip3 >/dev/null 2>&1; then
     PIP_COMMAND="pip3"
@@ -36,7 +36,7 @@ else
     exit 1
 fi
 
-$PIP_COMMAND install pypi/${VERSION}/*.whl
+$PIP_COMMAND install pypi/${VERSION_EXTRA}/*.whl
 
 TWINE_PASSWORD=$GLPAT \
   TWINE_USERNAME=$GLUSR \

@@ -95,7 +95,7 @@ components:
           - cmd: "./zarf-files/pypi-download.sh ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
       onDeploy:
         after:
-          - cmd: "./pypi-upload.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL} ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
+          - cmd: "./pypi-upload.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL} 3.12.1 ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
     files:
       - source: pypi/
         target: pypi/
