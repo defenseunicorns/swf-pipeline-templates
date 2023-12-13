@@ -117,6 +117,7 @@ components:
       - "https://gitlab.com/defense-unicorns/swf-pipeline-hello-world-python"
 
   - name: zarf-component-images
+    required: true
     import:
       name: zarf-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-component:latest-skeleton
@@ -126,6 +127,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-component:latest-skeleton
 
   - name: cosign-component-images
+    required: true
     import:
       name: cosign-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/cosign-component:latest-skeleton
@@ -135,6 +137,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/cosign-component:latest-skeleton
 
   - name: dockerlint-component-images
+    required: true
     import:
       name: dockerlint-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/dockerlint-component:latest-skeleton
@@ -144,6 +147,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/dockerlint-component:latest-skeleton
 
   - name: gitleaks-component-images
+    required: true
     import:
       name: gitleaks-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/gitleaks-component:latest-skeleton
@@ -153,6 +157,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/gitleaks-component:latest-skeleton
 
   - name: sonarqube-component-images
+    required: true
     import:
       name: sonarqube-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/sonarqube-component:latest-skeleton
@@ -162,6 +167,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/sonarqube-component:latest-skeleton
 
   - name: build-image-component-images
+    required: true
     import:
       name: build-image-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/build-image-component:latest-skeleton
@@ -171,6 +177,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/build-image-component:latest-skeleton
 
   - name: unit-tests-component-images
+    required: true
     import:
       name: unit-tests-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/unit-tests-component:latest-skeleton
@@ -180,6 +187,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/unit-tests-component:latest-skeleton
 
   - name: scan-image-component-images
+    required: true
     import:
       name: scan-image-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/scan-image-component:latest-skeleton
@@ -189,6 +197,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/scan-image-component:latest-skeleton
 
   - name: push-image-component-images
+    required: true
     import:
       name: push-image-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/push-image-component:latest-skeleton
@@ -198,6 +207,7 @@ components:
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/push-image-component:latest-skeleton
 
   - name: zarf-sbom-component-images
+    required: true
     import:
       name: zarf-sbom-component-images
       url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-sbom-component:latest-skeleton
