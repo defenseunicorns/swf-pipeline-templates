@@ -33,6 +33,9 @@ components:
           - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab --output jsonpath='{.spec.hosts[0]}'
             setVariables:
               - name: GITLAB_URL
+          - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab-registry --output jsonpath='{.spec.hosts[0]}'
+            setVariables:
+              - name: REGISTRY_URL
         after:
           - cmd: |
               ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
