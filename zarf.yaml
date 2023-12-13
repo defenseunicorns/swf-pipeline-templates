@@ -97,6 +97,7 @@ components:
                 --registry-push-username "${ZARF_VAR_GITLAB_USER}"                 \
                 --registry-push-password "${ZARF_VAR_GITLAB_PASSWORD}"             \
                 --no-progress                                                      \
+                --no-img-checksum                                                  \
                 --confirm
             maxRetries: 3
   - name: pipeline-templates
