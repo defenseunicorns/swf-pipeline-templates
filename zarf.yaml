@@ -39,7 +39,7 @@ components:
         after:
           - cmd: |
               ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
-                --components zarf-component-repos,cosign-component-repos,dockerlint-component-repos,gitleaks-component-repos,sonarqube-component-repos,build-image-component-repos,push-image-component-repos,zarf-sbom-component-repos,unit-tests-component-repos,scan-image-component-repos \
+                --components zarf-component-repos,cosign-component-repos,dockerlint-component-repos,gitleaks-component-repos,sonarqube-component-repos,build-image-component-repos,push-image-component-repos,zarf-sbom-component-repos,unit-tests-component-repos,scan-image-component-repos,pipeline-repos,example-repos \
                 --git-url "https://${ZARF_VAR_GITLAB_URL}"                         \
                 --git-push-username "${ZARF_VAR_GITLAB_USER}"                      \
                 --git-push-password "${ZARF_VAR_GITLAB_PASSWORD}"                  \
@@ -102,6 +102,19 @@ components:
       - source: zarf-files/pypi-upload.sh
         target: pypi-upload.sh
         executable: true
+
+  - name: pipeline-repos
+    required: false
+    repos:
+      - "https://gitlab.com/defense-unicorns/image-intake"
+      - "https://gitlab.com/defense-unicorns/pypi-intake"
+
+  - name: example-repos
+    required: false
+    repos:
+      - "https://gitlab.com/defense-unicorns/swf-pipeline-hello-world-node"
+      - "https://gitlab.com/defense-unicorns/swf-pipeline-hello-world-go"
+      - "https://gitlab.com/defense-unicorns/swf-pipeline-hello-world-python"
 
   - name: zarf-component-images
     import:
