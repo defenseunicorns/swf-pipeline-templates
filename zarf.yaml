@@ -12,12 +12,15 @@ variables:
     description: GitLab personal access token with api access
 
 components:
-  - name: gitlab-cli
+  - name: cli-tools
     required: true
     files:
-      - source: https://gitlab.com/gitlab-org/cli/-/releases/v1.35.0/downloads/glab_1.35.0_Linux_x86_64.tar.gz
+      - source: https://gitlab.com/gitlab-org/cli/-/releases/v1.36.0/downloads/glab_1.36.0_Linux_x86_64.tar.gz
         extractPath: bin/glab
         target: glab
+        executable: true
+      - source: https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux-amd64
+        target: jq
         executable: true
   - name: git-sync
     required: true
@@ -36,7 +39,7 @@ components:
         after:
           - cmd: |
               ./zarf package mirror-resources zarf-package-swf-bootstrap-*.tar.zst \
-                --components pipeline-templates                                    \
+                --components zarf-component-repos,cosign-component-repos,dockerlint-component-repos,gitleaks-component-repos,sonarqube-component-repos,build-image-component-repos,push-image-component-repos,zarf-sbom-component-repos,unit-tests-component-repos,scan-image-component-repos \
                 --git-url "https://${ZARF_VAR_GITLAB_URL}"                         \
                 --git-push-username "${ZARF_VAR_GITLAB_USER}"                      \
                 --git-push-password "${ZARF_VAR_GITLAB_PASSWORD}"                  \
@@ -49,40 +52,15 @@ components:
       - source: zarf-files/gitlab-reorg.sh
         target: gitlab-reorg.sh
         executable: true
-      - source: https://github.com/jqlang/jq/releases/download/jq-1.7/jq-linux-amd64
-        target: jq
-        executable: true
     actions:
       onDeploy:
         after:
           - cmd: ./gitlab-reorg.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL}
-  - name: pypi-packages
-    required: true
-    actions:
-      onCreate:
-        before:
-          - cmd: ./zarf-files/pypi-download.sh 3.12.1
-          - cmd: "./zarf-files/pypi-download.sh ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
-      onDeploy:
-        after:
-          - cmd: "./pypi-upload.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL} ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
-    files:
-      - source: pypi/
-        target: pypi/
-      - source: zarf-files/pypi-upload.sh
-        target: pypi-upload.sh
-        executable: true
   - name: image-intake
     required: true
     actions:
       onDeploy:
         before:
-          - cmd: echo root
-            setVariables:
-              - name: GITLAB_USER
-          - cmd: ./zarf tools kubectl get secret --namespace gitlab gitlab-gitlab-initial-root-password --output jsonpath='{.data.password}' | base64 --decode
-            setVariables:
-              - name: GITLAB_PASSWORD
           - cmd: ./zarf tools kubectl get virtualservice --namespace gitlab gitlab-registry --output jsonpath='{.spec.hosts[0]}'
             setVariables:
               - name: REGISTRY_URL
@@ -100,35 +78,6 @@ components:
                 --no-img-checksum                                                  \
                 --confirm
             maxRetries: 3
-  - name: pipeline-templates
-    required: false
-    repos:
-      - https://gitlab.com/defense-unicorns/swf-pipeline-hello-world-python
-      - https://gitlab.com/defense-unicorns/gitlab-components/zarf-sbom-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/zarf-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/unit-tests-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/sonarqube-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/scan-image-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/push-image-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/gitleaks-component
-      - https://gitlab.com/defense-unicorns/gitlab-components/cosign-component
-      - https://gitlab.com/defense-unicorns/pypi-intake
-      - https://gitlab.com/defense-unicorns/image-intake
-  - name: pipeline-images
-    required: true
-    images:
-      - gcr.io/kaniko-project/executor:v1.14.0-debug
-      - cgr.dev/chainguard/cosign:latest
-      - zricethezav/gitleaks:latest
-      - quay.io/skopeo/stable:v1.13.3
-      - clamav/clamav:latest
-      - ghcr.io/defenseunicorns/swf-pipeline-templates/grype:latest-with-db
-      - ghcr.io/defenseunicorns/swf-pipeline-templates/trivy:0.48.0-with-db
-      - sonarsource/sonar-scanner-cli:latest
-      - python:3.12.1
-      - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
-      - bitnami/git:2.43.0
-      - hadolint/hadolint:latest-alpine
   - name: developer-images
     required: false
     images:
@@ -137,3 +86,109 @@ components:
       - golang:1.21-bookworm
       # Too many directories deep for gl container registry
       # - ghcr.io/defenseunicorns/swf-pipeline-templates/zarf:v0.31.3
+  - name: pypi-packages
+    required: true
+    actions:
+      onCreate:
+        before:
+          - cmd: ./zarf-files/pypi-download.sh 3.12.1
+          - cmd: "./zarf-files/pypi-download.sh ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
+      onDeploy:
+        after:
+          - cmd: "./pypi-upload.sh ${ZARF_VAR_GITLAB_PAT} ${ZARF_VAR_GITLAB_URL} ###ZARF_PKG_TMPL_PYTHON_VERSION_EXTRA###"
+    files:
+      - source: pypi/
+        target: pypi/
+      - source: zarf-files/pypi-upload.sh
+        target: pypi-upload.sh
+        executable: true
+
+  - name: zarf-component-images
+    import:
+      name: zarf-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-component:latest-skeleton
+  - name: zarf-component-repos
+    import:
+      name: zarf-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-component:latest-skeleton
+
+  - name: cosign-component-images
+    import:
+      name: cosign-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/cosign-component:latest-skeleton
+  - name: cosign-component-repos
+    import:
+      name: cosign-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/cosign-component:latest-skeleton
+
+  - name: dockerlint-component-images
+    import:
+      name: dockerlint-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/dockerlint-component:latest-skeleton
+  - name: dockerlint-component-repos
+    import:
+      name: dockerlint-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/dockerlint-component:latest-skeleton
+
+  - name: gitleaks-component-images
+    import:
+      name: gitleaks-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/gitleaks-component:latest-skeleton
+  - name: gitleaks-component-repos
+    import:
+      name: gitleaks-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/gitleaks-component:latest-skeleton
+
+  - name: sonarqube-component-images
+    import:
+      name: sonarqube-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/sonarqube-component:latest-skeleton
+  - name: sonarqube-component-repos
+    import:
+      name: sonarqube-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/sonarqube-component:latest-skeleton
+
+  - name: build-image-component-images
+    import:
+      name: build-image-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/build-image-component:latest-skeleton
+  - name: build-image-component-repos
+    import:
+      name: build-image-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/build-image-component:latest-skeleton
+
+  - name: unit-tests-component-images
+    import:
+      name: unit-tests-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/unit-tests-component:latest-skeleton
+  - name: unit-tests-component-repos
+    import:
+      name: unit-tests-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/unit-tests-component:latest-skeleton
+
+  - name: scan-image-component-images
+    import:
+      name: scan-image-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/scan-image-component:latest-skeleton
+  - name: scan-image-component-repos
+    import:
+      name: scan-image-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/scan-image-component:latest-skeleton
+
+  - name: push-image-component-images
+    import:
+      name: push-image-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/push-image-component:latest-skeleton
+  - name: push-image-component-repos
+    import:
+      name: push-image-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/push-image-component:latest-skeleton
+
+  - name: zarf-sbom-component-images
+    import:
+      name: zarf-sbom-component-images
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-sbom-component:latest-skeleton
+  - name: zarf-sbom-component-repos
+    import:
+      name: zarf-sbom-component-repos
+      url: oci://ghcr.io/defenseunicorns/swf-pipeline-templates/zarf-sbom-component:latest-skeleton
