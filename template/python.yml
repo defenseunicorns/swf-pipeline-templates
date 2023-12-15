@@ -9,7 +9,7 @@ stages:
   - zarf-pkg
   # - deploy-staging
 
-image: python:latest
+image: python:3.12
 
 include:
   - local: jobs/unit-tests/python.yml
@@ -23,9 +23,19 @@ include:
   - local: jobs/push-image/skopeo.yml
   - local: jobs/cosign/cosign.yml
   - local: jobs/zarf-pkg/zarf-pkg.yml
-  # - local: jobs/deploy/deploy.yml
 
+unit-tests:
+  variables:
+    PIP_EXTRA_ARGS: ${PIP_INDEX_URL_ARG}
+
+build-image:
+  variables:
+    KANIKO_EXTRA_ARG: --build-arg pip_extra_args=${PIP_INDEX_URL_ARG}
 
 variables:
   # top level folder to hold pipeline artifacts
   ARTIFACT_FOLDER: ".ci_artifacts"
+  # The project that has the python dependencies published to the package registry
+  PYPI_INDEX_URL: "https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.bigbang.dev/api/v4/projects/1/packages/pypi/simple"
+  PIP_INDEX_URL_ARG: --index-url "${PYPI_INDEX_URL}"
+
