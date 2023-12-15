@@ -109,6 +109,11 @@ components:
       - "https://gitlab.com/defense-unicorns/image-intake"
       - "https://gitlab.com/defense-unicorns/pypi-intake"
 
+  - name: pipeline-images
+    required: true
+    images:
+      - bitnami/cosign:2.2.2
+
   - name: example-repos
     required: false
     repos:
